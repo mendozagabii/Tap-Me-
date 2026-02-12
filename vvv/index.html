@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>moving emoji · valentine invitation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(145deg, #ffdde1 0%, #f9c9d1 100%);
+      font-family: 'Quicksand', 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Floating hearts background */
+    .heart-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0.7;
+      animation: float-up linear infinite;
+    }
+
+    @keyframes float-up {
+      0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+      }
+      90% {
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(var(--drift, 0px));
+        opacity: 0;
+      }
+    }
+
+    .valentine-card {
+      max-width: 650px;
+      width: 100%;
+      background: rgba(255, 245, 245, 0.75);
+      backdrop-filter: blur(10px);
+      border-radius: 64px 64px 48px 48px;
+      box-shadow: 0 20px 40px rgba(180, 60, 80, 0.25);
+      padding: 32px 24px 40px;
+      border: 2px solid rgba(255, 220, 220, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.2s, opacity 0.5s ease, transform 0.5s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ——— moving emoji zone ——— */
+    .emoji-stage {
+      position: relative;
+      width: 100%;
+      min-height: 140px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .floating-emoji {
+      font-size: 120px;
+      position: relative;
+      display: inline-block;
+      animation: bob 3s ease-in-out infinite;
+      filter: drop-shadow(0 8px 12px rgba(219, 70, 100, 0.3));
+      transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), 
+                  top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  right 0.35s, bottom 0.35s, 
+                  transform 0.2s ease;
+      cursor: default;
+      will-change: transform, left, top;
+    }
+
+    /* gentle float so it's not static — but position changes are JS-driven */
+    @keyframes bob {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(6deg); }
+    }
+
+    /* invitation text */
+    .invitation-text {
+      text-align: center;
+      margin: 12px 0 16px;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #a12b4a;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0 #ffe3e7;
+      margin-bottom: 6px;
+    }
+
+    .sub {
+      font-size: 1.3rem;
+      color: #c5546c;
+      background: #ffeef0;
+      padding: 6px 18px;
+      border-radius: 60px;
+      display: inline-block;
+      backdrop-filter: blur(4px);
+      font-weight: 600;
+      box-shadow: inset 0 1px 4px rgba(255,255,255,0.8);
+    }
+
+    /* celebration modal overlay */
+    .celebration-modal {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
+    .celebration-modal.show {
+      display: flex;
+    }
+
+    /* celebration box */
+    .celebration-box {
+      background: linear-gradient(135deg, #fff5f7 0%, #ffeef0 100%);
+      border-radius: 40px;
+      padding: 50px 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(219, 70, 100, 0.4);
+      border: 3px solid #ff4d6d;
+      max-width: 500px;
+      width: 90%;
+      animation: celebration-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes celebration-pop {
+      0% {
+        transform: scale(0) rotate(-10deg);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .celebration-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #a12b4a;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 0 #ffe3e7;
+    }
+
+    .celebration-emoji {
+      font-size: 160px;
+      margin: 25px 0;
+      animation: bounce-celebration 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce-celebration {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .celebration-message {
+      font-size: 1.5rem;
+      color: #c5546c;
+      font-weight: 600;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    /* confetti pieces */
+    .confetti {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 1001;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) translateX(var(--drift, 0px)) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .confetti.pop {
+      animation: confetti-fall linear forwards;
+    }
+
+    /* button container – keeps relative flow */
+    .button-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 24px;
+      width: 100%;
+      position: relative;
+    }
+
+    /* YES button — will grow from 1x to 1.45x on final stage */
+    .btn-yes {
+      background: #ff4d6d;
+      border: none;
+      color: white;
+      font-size: 2.2rem;
+      font-weight: 700;
+      padding: 16px 44px;
+      border-radius: 80px;
+      letter-spacing: 5px;
+      box-shadow: 0 12px 0 #a1203a, 0 10px 25px rgba(255, 70, 110, 0.5);
+      transition: transform 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28), 
+                  box-shadow 0.2s, background 0.1s;
+      cursor: pointer;
+      border: 3px solid #fff9f9;
+      transform: scale(1); /* default */
+    }
+
+    .btn-yes:hover {
+      background: #ff3357;
+      box-shadow: 0 8px 0 #8f1b31, 0 14px 30px #ff4d6d;
+      transform: scale(1.03);
+    }
+
+    /* YES enlarged state – activates after no button vanishes */
+    .btn-yes.enlarged-yes {
+      transform: scale(1.45);
+      box-shadow: 0 14px 0 #a1203a, 0 18px 40px #ff3b5c;
+      background: #ff1e4d;
+    }
+
+    /* NO button – will move erratically, vanish on 5th click */
+    .btn-no {
+      background: #4a3a4a;
+      color: #ffd9df;
+      font-size: 1.9rem;
+      font-weight: 600;
+      padding: 14px 38px;
+      border: 3px solid #ffeef0;
+      border-radius: 80px;
+      box-shadow: 0 10px 0 #2d1f2d, 0 6px 18px #2f1e2a;
+      letter-spacing: 3px;
+      transition: transform 0.25s ease, left 0.4s ease, top 0.4s, right 0.4s, bottom 0.4s, box-shadow 0.1s;
+      cursor: pointer;
+      position: relative; /* to move via left/right/top/bottom */
+      will-change: transform, left, top;
+    }
+
+    .btn-no:hover {
+      background: #5f4a5a;
+      transform: scale(0.96);
+    }
+
+    /* hidden state – 5th click makes it disappear */
+    .btn-no-hidden {
+      display: none;
+    }
+
+    /* extra style for clicked emoji move – subtle */
+    .floating-emoji.jump {
+      animation: none; /* tiny override */
+    }
+
+    /* responsive */
+    @media (max-width: 500px) {
+      .valentine-card { padding: 24px 16px; }
+      .btn-yes { font-size: 1.9rem; padding: 14px 32px; }
+      .btn-no { font-size: 1.7rem; padding: 12px 28px; }
+      .floating-emoji { font-size: 100px; }
+      .celebration-box { padding: 35px 25px; }
+      .celebration-title { font-size: 1.8rem; }
+      .celebration-emoji { font-size: 120px; }
+      .celebration-message { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="heart-container" id="heartContainer"></div>
+  
+  <!-- celebration modal -->
+  <div class="celebration-modal" id="celebrationModal">
+    <div class="celebration-box">
+      <div class="celebration-title">Yay! Happy Valentine's Day! 💕</div>
+      <div class="celebration-emoji">👨‍❤️‍👩</div>
+      <div class="celebration-message">i love you so muchh!</div>
+    </div>
+  </div>
+
+  <div class="valentine-card">
+    
+    <!-- one moving emoji (position changes + bob) -->
+    <div class="emoji-stage">
+      <div id="movingEmoji" class="floating-emoji"></div>
+    </div>
+
+    <div class="invitation-text">
+      <h2>Maureen will you be my valentine?</h2>
+    </div>
+
+    <!-- YES + NO buttons -->
+    <div class="button-panel">
+      <button id="yesBtn" class="btn-yes">YES</button>
+      <button id="noBtn" class="btn-no">NO</button>
+    </div>
+
+
+  <script>
+    (function() {
+      "use strict";
+
+      // ----- ELEMENTS -----
+      const emoji = document.getElementById('movingEmoji');
+      const noButton = document.getElementById('noBtn');
+      const yesButton = document.getElementById('yesBtn');
+
+      // ----- STATE -----
+      let clickCount = 0;          // tracks NO button presses
+      const MOVE_CLICKS_LIMIT = 5; // disappear on 5th click
+      
+      // Emoji array for cycling through valentine emojis
+      const valentineEmojis = ['😍', '😘', '😊', '😔', '🥺', '😭'];
+      let currentEmojiIndex = 0;
+
+      // ----- POSITION / DIRECTION LOGIC -----
+      // We'll store possible directions and current offset "phase"
+      // We want emoji to shift relative to its normal flow
+      // Also we make NO button move/dodge randomly or direction-based
+
+      // 1) MOVING EMOJI – always just one, position changes on NO click
+      function moveEmojiRandomly() {
+        // range: shift from -40px to 40px in both axes, relative to its original spot
+        const deltaX = (Math.random() * 80) - 40;  // -40 .. 40
+        const deltaY = (Math.random() * 70) - 30;  // -30 .. 40 (some variety)
+        // apply using transform? but we also want direction-like behaviour.
+        // use left/right/top/bottom to make it 'move direction' 
+        // we reset previous inline styles and apply new ones.
+        // we'll use left and top relative to its parent (stage)
+        emoji.style.position = 'relative';
+        emoji.style.left = deltaX + 'px';
+        emoji.style.top = deltaY + 'px';
+        // small extra bounce
+        emoji.style.transform = `rotate(${Math.random() * 12 - 6}deg)`;
+      }
+
+      // Change emoji to next in cycle
+      function changeEmoji() {
+        currentEmojiIndex = (currentEmojiIndex + 1) % valentineEmojis.length;
+        emoji.innerText = valentineEmojis[currentEmojiIndex];
+      }
+
+      // 2) NO BUTTON – move to a new position (change direction & placement)
+      function moveNoButton() {
+        // get parent dimensions to avoid going too far off, but keep inside card
+        const cardRect = document.querySelector('.valentine-card').getBoundingClientRect();
+        const noRect = noButton.getBoundingClientRect();
+        const parentWidth = cardRect.width;
+        const parentHeight = cardRect.height - 40; // leave padding
+
+        // relative offset relative to its natural static position (flex)
+        // we set position: relative on noButton already in CSS, we will use left & top
+        // reset to zero as base? we add incremental random but we want a fresh "dodge"
+        // to make it feel like it changes direction: we can randomize
+        let newLeft, newTop;
+        
+        // we want to keep within horizontal range: increased for more distance
+        newLeft = (Math.random() * 400) - 200;  // -200 .. 200
+        newTop = (Math.random() * 300) - 100;    // -100 .. 200 (much more range)
+        
+        // but also flip direction sometimes: we add some sign pattern
+        // For the fun: on each click the button moves erratically
+        noButton.style.left = newLeft + 'px';
+        noButton.style.top = newTop + 'px';
+        
+        // also shift a bit rotation to look dynamic
+        noButton.style.transform = `rotate(${Math.random() * 8 - 4}deg)`;
+      }
+
+      // reset NO button position (optional, but we keep accumulated shift)
+      // we also need to reset if we hide it? we just hide
+
+      // 3) HANDLE NO CLICK
+      function onNoClick() {
+        clickCount++;
+
+        // --- 1) move the ONE emoji (direction/position change) ---
+        moveEmojiRandomly();
+
+        // --- 2) change emoji ---
+        changeEmoji();
+
+        // --- 3) change no button position / direction ---
+        if (clickCount < MOVE_CLICKS_LIMIT) {
+          moveNoButton();
+        }
+
+        // --- 4) if fifth click: NO disappears & YES grows larger ---
+        if (clickCount === MOVE_CLICKS_LIMIT) {
+          // hide no button permanently (add hidden class)
+          noButton.classList.add('btn-no-hidden');
+          
+          // YES button becomes larger than its default size.
+          // default = scale(1) ; we want larger -> scale(1.45)
+          // add class to trigger enlarged style
+          yesButton.classList.add('enlarged-yes');
+
+          // optional: one last emoji move to make it special
+          moveEmojiRandomly(); // extra fling
+        }
+
+        // if clicks exceed limit, do nothing else (no button already hidden)
+      }
+
+      // --- YES button click: celebration with confetti ---
+      function onYesClick() {
+        // Hide the valentine card
+        const valentineCard = document.querySelector('.valentine-card');
+        valentineCard.style.opacity = '0';
+        valentineCard.style.transform = 'scale(0.8)';
+        valentineCard.style.pointerEvents = 'none';
+        
+        // Show celebration modal
+        const celebrationModal = document.getElementById('celebrationModal');
+        celebrationModal.classList.add('show');
+        
+        // Create confetti explosion
+        createConfettiExplosion();
+      }
+
+      // Create confetti explosion effect
+      function createConfettiExplosion() {
+        const confettiEmojis = ['❤️', '💕', '💖', '💗', '💝', '🌹', '✨', '🎉'];
+        const confettiCount = 40;
+        
+        for (let i = 0; i < confettiCount; i++) {
+          setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti pop';
+            confetti.innerText = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
+            
+            // Random starting position across the top
+            const randomX = Math.random() * window.innerWidth;
+            confetti.style.left = randomX + 'px';
+            confetti.style.top = '0px';
+            
+            // Random animation duration
+            const duration = 3 + Math.random() * 2;
+            confetti.style.animationDuration = duration + 's';
+            
+            // Random horizontal drift
+            const drift = (Math.random() - 0.5) * 400;
+            confetti.style.setProperty('--drift', drift + 'px');
+            
+            document.body.appendChild(confetti);
+            
+            // Remove element after animation
+            setTimeout(() => {
+              confetti.remove();
+            }, duration * 1000);
+          }, i * 50);
+        }
+      }
+
+      // ----- initial attachment -----
+      function init() {
+        // Set initial emoji
+        emoji.innerText = valentineEmojis[currentEmojiIndex];
+        
+        // attach listeners
+        noButton.addEventListener('click', onNoClick);
+        yesButton.addEventListener('click', onYesClick);
+
+        // initial emoji position subtle (already default)
+        // ensure NO button starts without extreme inline styles
+        // but we keep it clean; we want its initial position natural.
+        // we reset any accidental inline leftovers
+        noButton.style.left = ''; 
+        noButton.style.top = '';
+        noButton.style.transform = '';
+        emoji.style.left = '';
+        emoji.style.top = '';
+        emoji.style.transform = '';
+
+        // make sure no hidden class is off
+        noButton.classList.remove('btn-no-hidden');
+        yesButton.classList.remove('enlarged-yes');
+        clickCount = 0; // reset if re-init
+      }
+
+      init();
+
+      // minor: adjust if window resize, maybe reset no button? not needed
+      // But we keep direction change consistent.
+      // Also to satisfy 'only one moving emoji' — emoji moves every no click.
+      // No other moving elements, just that floating emoji + the no button moves, but that's not an emoji, that's a button. fine.
+
+      // Optional: ensure emoji is the only thing that animates besides button moves
+      // also ensure that on fifth click, NO button disappears, YES bigger.
+      // the YES button enlarges beyond its default size (scale 1.45 > 1)
+      // Perfect.
+
+    })();
+  </script>
+
+  <!-- tiny addition: if someone double clicks no fast, still counts -->
+  <!-- also the moving emoji is the only animated emoji (no other emoji moves) -->
+  <!-- Floating hearts background animation -->
+  <script>
+    (function createFloatingHearts() {
+      const heartContainer = document.getElementById('heartContainer');
+      const hearts = ['❤️', '💕', '💖', '💗', '💝'];
+      
+      function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+        
+        // Random horizontal position
+        const randomX = Math.random() * 100;
+        heart.style.left = randomX + '%';
+        
+        // Random animation duration (5-15 seconds)
+        const duration = 5 + Math.random() * 10;
+        heart.style.animationDuration = duration + 's';
+        
+        // Random delay to stagger hearts
+        const delay = Math.random() * 2;
+        heart.style.animationDelay = -delay + 's';
+        
+        // Random horizontal drift
+        const drift = (Math.random() - 0.5) * 100;
+        heart.style.setProperty('--drift', drift + 'px');
+        
+        heartContainer.appendChild(heart);
+        
+        // Remove heart after animation completes
+        setTimeout(() => {
+          heart.remove();
+        }, (duration + delay) * 1000);
+      }
+      
+      // Create hearts every 300ms
+      setInterval(createHeart, 300);
+      
+      // Create initial hearts
+      for (let i = 0; i < 5; i++) {
+        setTimeout(createHeart, i * 200);
+      }
+    })();
+  </script>
+</body>
+</html>
